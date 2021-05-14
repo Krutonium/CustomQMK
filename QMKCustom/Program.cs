@@ -109,8 +109,34 @@ namespace QMKCustom
             string newFile = injectLine(File.ReadAllText(path), "#define FORCE_NKRO", "#define DEBOUNCE");
             newFile = injectLine(newFile, "#define SLEEP_LED_MODE_ANIMATION RGB_MATRIX_NONE", "#define FORCE_NKRO");
             newFile = injectLine(newFile, "/* Enable NKRO and Disable Sleep RGB */", "#define DEBOUNCE");
+            newFile = removeLine(newFile, "#define DEBOUNCE");
+            newFile = injectLine(newFile, "#define FORCE_NKRO", "#define DEBOUNCE 20");
             File.WriteAllText(path, newFile);
         }
+
+        public static string removeLine(string oldText, string toRemove)
+        {
+            Console.WriteLine("Removing " + toRemove);
+            List<string> lines = oldText.Split(
+                new[] {"\r\n", "\r", "\n"},
+                StringSplitOptions.None
+            ).ToList();
+            List<string> newText = new List<string>();
+            foreach (var line in lines)
+            {
+                if (!line.Contains(toRemove))
+                {
+                    newText.Add(line);
+                }
+            }
+            string toReturn = "";
+            foreach (var line in newText)
+            {
+                toReturn += line + Environment.NewLine;
+            }
+            return toReturn;
+        }
+        
         public static string injectLine(string oldText, string newText, string after)
         {
             Console.WriteLine("Injecting " + newText);
