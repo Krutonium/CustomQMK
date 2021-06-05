@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
+
 using LibGit2Sharp;
 
 namespace QMKCustom
@@ -32,13 +34,17 @@ namespace QMKCustom
             options.BranchName = openrgb_branch;
             Console.WriteLine("Cloning Repo...");
             Repository.Clone("https://github.com/SonixQMK/qmk_firmware.git", repoLocation, options);
+            Console.WriteLine("Adding Different Debounce");
+            WebClient wc = new WebClient();
+            wc.DownloadFile("https://raw.githubusercontent.com/smp4488/qmk_firmware/981de4a14c91d4d016c6e71a6b5fbba0a8eb8d11/quantum/debounce/sym_eager_g.c",
+                repoLocation + "/quantum/debounce/sym_eager_g.c");
             Console.WriteLine("Editing Config.h");
-            EditConfigH(k552_rev1_config_h);   
-            EditConfigH(k552_rev2_config_h);
+            //EditConfigH(k552_rev1_config_h);   
+            //EditConfigH(k552_rev2_config_h);
             EditConfigH(k556_config_h);
             Console.WriteLine("Done Editing Config.h; Editing rules.mk");
-            EditRulesMk(k552_rev1_rules_mk);
-            EditRulesMk(k552_rev2_rules_mk);
+            //EditRulesMk(k552_rev1_rules_mk);
+            //EditRulesMk(k552_rev2_rules_mk);
             EditRulesMk(k556_rules_mk);
             Console.WriteLine("Finished Editing rules.mk");
             Console.WriteLine("Starting Build...");
@@ -52,14 +58,17 @@ namespace QMKCustom
             info.WorkingDirectory = repoLocation;
             info.FileName = "/usr/bin/make";
             info.Arguments = "redragon/k552/rev1 -j" + Environment.ProcessorCount;
-            Process.Start(info).WaitForExit();
+            //Process.Start(info).WaitForExit();
             info.Arguments = "redragon/k552/rev2 -j" + Environment.ProcessorCount;
-            Process.Start(info).WaitForExit();
+            //Process.Start(info).WaitForExit();
             info.Arguments = "redragon/k556 -j" + Environment.ProcessorCount;
             Process.Start(info).WaitForExit();
             
-            File.Move(repoLocation + "/redragon_k552_rev1_default.bin", "./redragon_k552_rev1_default.bin");
-            File.Move(repoLocation + "/redragon_k552_rev2_default.bin", "./redragon_k552_rev2_default.bin");
+           // File.Move(repoLocation + "/redragon_k552_rev1_default.bin", "./redragon_k552_rev1_default.bin");
+           // File.Move(repoLocation + "/redragon_k552_rev2_default.bin", "./redragon_k552_rev2_default.bin");
+           if (File.Exists("./redragon_k556_default.bin")) {
+               File.Delete("./redragon_k556_default.bin");
+           }
             File.Move(repoLocation + "/redragon_k556_default.bin", "./redragon_k556_default.bin");
             Directory.Delete(repoLocation, true);
             Console.WriteLine("All Done!");
@@ -72,6 +81,7 @@ namespace QMKCustom
             string RulesMk = File.ReadAllText(path);
             RulesMk = EditLine(RulesMk, "NKRO_ENABLE", "no", "yes");
             RulesMk = EditLine(RulesMk, "SLEEP_LED_ENABLE", "yes", "no");
+            RulesMk = injectLine(RulesMk, "DEBOUNCE_TYPE = sym_eager_g", "RGB_MATRIX_DRIVER");
             File.WriteAllText(path, RulesMk);
         }
 
@@ -110,7 +120,7 @@ namespace QMKCustom
             newFile = injectLine(newFile, "#define SLEEP_LED_MODE_ANIMATION RGB_MATRIX_NONE", "#define FORCE_NKRO");
             newFile = injectLine(newFile, "/* Enable NKRO and Disable Sleep RGB */", "#define DEBOUNCE");
             newFile = removeLine(newFile, "#define DEBOUNCE");
-            newFile = injectLine(newFile, "#define FORCE_NKRO", "#define DEBOUNCE 20");
+            newFile = injectLine(newFile, "#define DEBOUNCE 5", "#define FORCE_NKRO");
             File.WriteAllText(path, newFile);
         }
 
