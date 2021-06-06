@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -15,13 +16,9 @@ namespace QMKCustom
 
         private static readonly string k556_config_h = "./qmk_firmware/keyboards/redragon/k556/config.h";
         private static readonly string k556_rules_mk = "./qmk_firmware/keyboards/redragon/k556/rules.mk";
-        private static readonly string k552_rev1_config_h = "./qmk_firmware/keyboards/redragon/k552/rev2/config.h";
-        private static readonly string k552_rev1_rules_mk = "./qmk_firmware/keyboards/redragon/k552/rev2/rules.mk";
-        private static readonly string k552_rev2_config_h = "./qmk_firmware/keyboards/redragon/k552/rev2/config.h";
-        private static readonly string k552_rev2_rules_mk = "./qmk_firmware/keyboards/redragon/k552/rev2/rules.mk";
-        
-        
-        private static readonly string openrgb_branch = "sn32_openrgb";
+
+
+        private static readonly string openrgb_branch = "sn32_openrgb_new";
         static void Main(string[] args)
         {
             if (Directory.Exists(repoLocation))
@@ -39,12 +36,8 @@ namespace QMKCustom
             wc.DownloadFile("https://raw.githubusercontent.com/smp4488/qmk_firmware/981de4a14c91d4d016c6e71a6b5fbba0a8eb8d11/quantum/debounce/sym_eager_g.c",
                 repoLocation + "/quantum/debounce/sym_eager_g.c");
             Console.WriteLine("Editing Config.h");
-            //EditConfigH(k552_rev1_config_h);   
-            //EditConfigH(k552_rev2_config_h);
             EditConfigH(k556_config_h);
             Console.WriteLine("Done Editing Config.h; Editing rules.mk");
-            //EditRulesMk(k552_rev1_rules_mk);
-            //EditRulesMk(k552_rev2_rules_mk);
             EditRulesMk(k556_rules_mk);
             Console.WriteLine("Finished Editing rules.mk");
             Console.WriteLine("Starting Build...");
@@ -57,20 +50,14 @@ namespace QMKCustom
             ProcessStartInfo info = new ProcessStartInfo();
             info.WorkingDirectory = repoLocation;
             info.FileName = "/usr/bin/make";
-            info.Arguments = "redragon/k552/rev1 -j" + Environment.ProcessorCount;
-            //Process.Start(info).WaitForExit();
-            info.Arguments = "redragon/k552/rev2 -j" + Environment.ProcessorCount;
-            //Process.Start(info).WaitForExit();
             info.Arguments = "redragon/k556 -j" + Environment.ProcessorCount;
             Process.Start(info).WaitForExit();
             
-           // File.Move(repoLocation + "/redragon_k552_rev1_default.bin", "./redragon_k552_rev1_default.bin");
-           // File.Move(repoLocation + "/redragon_k552_rev2_default.bin", "./redragon_k552_rev2_default.bin");
            if (File.Exists("./redragon_k556_default.bin")) {
                File.Delete("./redragon_k556_default.bin");
            }
             File.Move(repoLocation + "/redragon_k556_default.bin", "./redragon_k556_default.bin");
-            Directory.Delete(repoLocation, true);
+            //Directory.Delete(repoLocation, true);
             Console.WriteLine("All Done!");
         }
         
@@ -82,6 +69,7 @@ namespace QMKCustom
             RulesMk = EditLine(RulesMk, "NKRO_ENABLE", "no", "yes");
             RulesMk = EditLine(RulesMk, "SLEEP_LED_ENABLE", "yes", "no");
             RulesMk = injectLine(RulesMk, "DEBOUNCE_TYPE = sym_eager_g", "RGB_MATRIX_DRIVER");
+            //RulesMk = EditLine(RulesMk, "LTO_ENABLE", "no", "yes");
             File.WriteAllText(path, RulesMk);
         }
 
