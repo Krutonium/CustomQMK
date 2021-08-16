@@ -1,4 +1,4 @@
-# K552/K556 NKRO/LED SLEEP MODE ENABLER
+# K582 NKRO and custom debounce Enabler
 
 All this does is toggle some flags and build the firmware from source.
 
