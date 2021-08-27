@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-
+using System.Net.Security;
 using LibGit2Sharp;
 
 namespace QMKCustom
@@ -68,7 +68,7 @@ namespace QMKCustom
             string RulesMk = File.ReadAllText(path);
             RulesMk = EditLine(RulesMk, "NKRO_ENABLE", "no", "yes");
             RulesMk = EditLine(RulesMk, "SLEEP_LED_ENABLE", "yes", "no");
-            RulesMk = injectLine(RulesMk, "DEBOUNCE_TYPE = sym_eager_g", "RGB_MATRIX_DRIVER");
+            //RulesMk = injectLine(RulesMk, "DEBOUNCE_TYPE = sym_eager_g", "RGB_MATRIX_DRIVER");
             RulesMk = EditLine(RulesMk, "LTO_ENABLE", "no", "yes");
             File.WriteAllText(path, RulesMk);
         }
